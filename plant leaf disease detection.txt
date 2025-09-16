@@ -1,0 +1,35 @@
+import gradio as gr
+from google import genai
+
+# Initialize client
+client = genai.Client(api_key="AIzaSyDBl005Zri8wyLpjtIxGImjHz4kWwW7CCc")
+
+# Function for Gradio
+def analyze_image(image, text):
+    if image is None or text.strip() == "":
+        return "Please upload an image and enter a prompt."
+
+    # Upload user image to Google GenAI
+    my_file = client.files.upload(file=image)
+
+    # Send image + text to model
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[my_file, text],
+    )
+
+    return response.text
+
+# Gradio UI
+iface = gr.Interface(
+    fn=analyze_image,
+    inputs=[
+        gr.Image(type="filepath", label="Upload Leaf Image"),
+        gr.Textbox(label="Enter your prompt", placeholder="e.g., Find the disease name"),
+    ],
+    outputs=gr.Textbox(label="Model Response"),
+    title="Plant Leaf Disease Detection",
+    description="Upload a leaf image and enter a prompt. The AI will analyze and respond."
+)
+
+iface.launch()
